@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Help | Naija Cgpa</title>
+    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0056D2;
+            --primary-light: #0081FF;
+            --success: #00B86B;
+            --bg-body: #F1F5F9;
+            --text-main: #0F172A;
+            --text-muted: #475569;
+            --border-light: rgba(15, 23, 42, 0.08);
+            --glass-white: rgba(255, 255, 255, 0.85);
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+        }
+
+        .glass {
+            background: var(--glass-white);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-light);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.04);
+        }
+
+        .pop-in {
+            animation: popIn 0.3s ease-out forwards;
+        }
+
+        .slide-up {
+            animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes popIn {
+            from {
+                transform: scale(0.95);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+
+<body class="min-h-screen pb-12">
+    <!-- Navbar -->
+    <nav class="p-6 flex justify-between items-center max-w-2xl mx-auto">
+        <a href="index" class="p-2 glass rounded-full text-slate-400 hover:text-indigo-600 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+        </a>
+        <h1 class="text-sm font-black uppercase tracking-widest text-slate-500">Academic Guide</h1>
+        <div class="w-9"></div>
+    </nav>
+
+    <main class="container mx-auto px-6 max-w-2xl space-y-8">
+        <!-- Header -->
+        <header class="text-center pop-in">
+            <h1 class="text-3xl font-extrabold text-slate-800 leading-tight">How to calculate GPA & CGPA in Nigeria</h1>
+            <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mt-2">Simple Explanation</p>
+        </header>
+
+        <!-- GPA Section -->
+        <section class="glass rounded-[2.5rem] p-8 space-y-6 pop-in">
+            <h2 class="text-2xl font-extrabold text-emerald-600 border-b border-slate-100 pb-4">What is GPA?</h2>
+            <p class="text-slate-600 text-sm leading-relaxed"><strong>GPA</strong> means <strong>Grade Point
+                    Average</strong>. It shows the average of your course scores for <strong>one semester only</strong>.
+            </p>
+
+            <div class="space-y-4">
+                <h3 class="text-lg font-bold text-slate-800">How it works in Nigeria</h3>
+                <p class="text-slate-500 text-sm">Each course has:</p>
+                <ul class="grid grid-cols-1 gap-2">
+                    <li class="flex items-center gap-3 bg-white p-3 rounded-2xl border border-slate-100 shadow-sm">
+                        <span class="w-2 h-2 bg-emerald-500 rounded-full"></span>
+                        <span class="text-xs font-semibold text-slate-600">Units/Credit load (e.g. 2 units, 3
+                            units)</span>
+                    </li>
+                    <li class="flex items-center gap-3 bg-white p-3 rounded-2xl border border-slate-100 shadow-sm">
+                        <span class="w-2 h-2 bg-emerald-500 rounded-full"></span>
+                        <span class="text-xs font-semibold text-slate-600">Grade (A, B, C, etc.)</span>
+                    </li>
+                    <li class="flex items-center gap-3 bg-white p-3 rounded-2xl border border-slate-100 shadow-sm">
+                        <span class="w-2 h-2 bg-emerald-500 rounded-full"></span>
+                        <span class="text-xs font-semibold text-slate-600">Grade points (based on the grade)</span>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="space-y-4">
+                <h3 class="text-lg font-bold text-slate-800">Typical Grade System</h3>
+                <div class="overflow-hidden border border-slate-100 rounded-2xl glass">
+                    <table class="w-full text-left text-sm">
+                        <thead>
+                            <tr class="bg-slate-50 text-[10px] uppercase tracking-widest text-slate-500">
+                                <th class="p-4 font-black">Grade</th>
+                                <th class="p-4 font-black">Score Range</th>
+                                <th class="p-4 font-black">Grade Point</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-slate-600">
+                            <tr class="border-t border-slate-100">
+                                <td class="p-4 font-bold text-emerald-600">A</td>
+                                <td class="p-4">70–100</td>
+                                <td class="p-4 font-black">5</td>
+                            </tr>
+                            <tr class="border-t border-slate-100">
+                                <td class="p-4 font-bold text-cyan-600">B</td>
+                                <td class="p-4">60–69</td>
+                                <td class="p-4 font-black">4</td>
+                            </tr>
+                            <tr class="border-t border-slate-100">
+                                <td class="p-4 font-bold text-amber-500">C</td>
+                                <td class="p-4">50–59</td>
+                                <td class="p-4 font-black">3</td>
+                            </tr>
+                            <tr class="border-t border-slate-100">
+                                <td class="p-4 font-bold text-orange-500">D</td>
+                                <td class="p-4">45–49</td>
+                                <td class="p-4 font-black">2</td>
+                            </tr>
+                            <tr class="border-t border-slate-100">
+                                <td class="p-4 font-bold text-rose-500">E</td>
+                                <td class="p-4">40–44</td>
+                                <td class="p-4 font-black">1</td>
+                            </tr>
+                            <tr class="border-t border-slate-100">
+                                <td class="p-4 font-bold text-slate-400">F</td>
+                                <td class="p-4">0–39</td>
+                                <td class="p-4 font-black">0</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="space-y-4">
+                <h3 class="text-lg font-bold text-slate-800">How GPA is Calculated</h3>
+                <ol class="space-y-3">
+                    <li class="flex items-start gap-4">
+                        <span
+                            class="w-6 h-6 bg-emerald-50 text-emerald-600 rounded-lg flex items-center justify-center text-xs font-black flex-shrink-0">1</span>
+                        <p class="text-slate-600 text-sm">Multiply <strong>course units × grade point</strong> =
+                            <strong>Quality Points</strong>.
+                        </p>
+                    </li>
+                    <li class="flex items-start gap-4">
+                        <span
+                            class="w-6 h-6 bg-emerald-50 text-emerald-600 rounded-lg flex items-center justify-center text-xs font-black flex-shrink-0">2</span>
+                        <p class="text-slate-600 text-sm">Add all the Quality Points.</p>
+                    </li>
+                    <li class="flex items-start gap-4">
+                        <span
+                            class="w-6 h-6 bg-emerald-50 text-emerald-600 rounded-lg flex items-center justify-center text-xs font-black flex-shrink-0">3</span>
+                        <p class="text-slate-600 text-sm">Divide by the total course units for that semester.</p>
+                    </li>
+                </ol>
+            </div>
+
+            <div class="space-y-4">
+                <h3 class="text-lg font-bold text-slate-800">Example GPA Calculation</h3>
+                <div class="overflow-hidden border border-slate-100 rounded-2xl glass">
+                    <table class="w-full text-left text-sm">
+                        <thead>
+                            <tr class="bg-slate-50 text-[10px] uppercase tracking-widest text-slate-500">
+                                <th class="p-4 font-black">Course</th>
+                                <th class="p-4 font-black">Units</th>
+                                <th class="p-4 font-black">Grade</th>
+                                <th class="p-4 font-black">GP</th>
+                                <th class="p-4 font-black">QP</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-slate-600">
+                            <tr class="border-t border-slate-100">
+                                <td class="p-4">Math</td>
+                                <td class="p-4">3</td>
+                                <td class="p-4 font-bold text-cyan-600">B</td>
+                                <td class="p-4 font-black">4</td>
+                                <td class="p-4 font-black text-emerald-600">12</td>
+                            </tr>
+                            <tr class="border-t border-slate-100">
+                                <td class="p-4">English</td>
+                                <td class="p-4">2</td>
+                                <td class="p-4 font-bold text-cyan-600">A</td>
+                                <td class="p-4 font-black">5</td>
+                                <td class="p-4 font-black text-emerald-600">10</td>
+                            </tr>
+                            <tr class="border-t border-slate-100">
+                                <td class="p-4">Physics</td>
+                                <td class="p-4">3</td>
+                                <td class="p-4 font-bold text-cyan-600">C</td>
+                                <td class="p-4 font-black">3</td>
+                                <td class="p-4 font-black text-emerald-600">9</td>
+                            </tr>
+                            <tr class="border-t border-slate-100">
+                                <td class="p-4">GNS</td>
+                                <td class="p-4">2</td>
+                                <td class="p-4 font-bold text-cyan-600">B</td>
+                                <td class="p-4 font-black">4</td>
+                                <td class="p-4 font-black text-emerald-600">8</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="bg-emerald-50 border border-emerald-100 rounded-2xl p-6 text-center">
+                    <p class="text-slate-600 text-sm">
+                        Total Quality Points = <strong>39</strong> | Total Units = <strong>10</strong>
+                    </p>
+                    <div class="text-2xl font-black text-emerald-600 mt-2">GPA = 3.9</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CGPA Section -->
+        <section class="glass rounded-[2.5rem] p-8 space-y-6 pop-in">
+            <h2 class="text-2xl font-extrabold text-cyan-600 border-b border-slate-100 pb-4">What is CGPA?</h2>
+            <p class="text-slate-600 text-sm leading-relaxed"><strong>CGPA</strong> means <strong>Cumulative Grade Point
+                    Average</strong>. It is your <strong>overall</strong> GPA from year 1 till your current semester.
+            </p>
+
+            <div class="bg-cyan-50 border border-cyan-100 rounded-2xl p-6 text-center">
+                <p class="text-xs font-black text-cyan-600 uppercase tracking-widest mb-2">Formula</p>
+                <div class="text-sm font-bold text-slate-800">CGPA = Total Quality Points (All) ÷ Total Units (All)
+                </div>
+            </div>
+
+            <div class="space-y-4">
+                <h3 class="text-lg font-bold text-slate-800">Example CGPA Calculation</h3>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="glass border border-slate-100 rounded-2xl p-4">
+                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-tighter mb-2">1st Semester
+                        </p>
+                        <p class="text-xs text-slate-600">QP: <strong>39</strong></p>
+                        <p class="text-xs text-slate-600">Units: <strong>10</strong></p>
+                    </div>
+                    <div class="glass border border-slate-100 rounded-2xl p-4">
+                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-tighter mb-2">2nd Semester
+                        </p>
+                        <p class="text-xs text-slate-600">QP: <strong>37</strong></p>
+                        <p class="text-xs text-slate-600">Units: <strong>8</strong></p>
+                    </div>
+                </div>
+
+                <div class="overflow-hidden border border-slate-100 rounded-2xl glass">
+                    <table class="w-full text-left text-sm">
+                        <thead>
+                            <tr class="bg-slate-50 text-[10px] uppercase tracking-widest text-slate-500">
+                                <th class="p-4 font-black">Course</th>
+                                <th class="p-4 font-black">Units</th>
+                                <th class="p-4 font-black">Grade</th>
+                                <th class="p-4 font-black">GP</th>
+                                <th class="p-4 font-black">QP</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-slate-600">
+                            <tr class="border-t border-slate-100">
+                                <td class="p-4">Chemistry</td>
+                                <td class="p-4">3</td>
+                                <td class="p-4 font-bold text-cyan-600">A</td>
+                                <td class="p-4 font-black">5</td>
+                                <td class="p-4 font-black text-emerald-600">15</td>
+                            </tr>
+                            <tr class="border-t border-slate-100">
+                                <td class="p-4">Biology</td>
+                                <td class="p-4">3</td>
+                                <td class="p-4 font-bold text-cyan-600">B</td>
+                                <td class="p-4 font-black">4</td>
+                                <td class="p-4 font-black text-emerald-600">12</td>
+                            </tr>
+                            <tr class="border-t border-slate-100">
+                                <td class="p-4">GNS II</td>
+                                <td class="p-4">2</td>
+                                <td class="p-4 font-bold text-cyan-600">A</td>
+                                <td class="p-4 font-black">5</td>
+                                <td class="p-4 font-black text-emerald-600">10</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="bg-cyan-50 border border-cyan-100 rounded-2xl p-6 text-center">
+                    <p class="text-[10px] font-black text-slate-500 uppercase mb-4">Total Overall Calculation</p>
+                    <p class="text-slate-600 text-sm">
+                        Total QP = 39 + 37 = <strong>76</strong><br>
+                        Total Units = 10 + 8 = <strong>18</strong>
+                    </p>
+                    <div class="text-3xl font-black text-cyan-600 mt-4">CGPA = 4.22</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Summary Section -->
+        <section class="glass rounded-[2rem] p-8 pop-in">
+            <h2 class="text-xs font-black text-slate-500 uppercase tracking-widest mb-6 border-b border-slate-100 pb-2">
+                Simple Summary</h2>
+            <ul class="space-y-4">
+                <li class="flex items-start gap-4">
+                    <div class="w-8 h-8 rounded-full bg-emerald-50 flex items-center justify-center flex-shrink-0">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-emerald-600" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                    </div>
+                    <p class="text-slate-600 text-sm"><strong>GPA</strong> = how well you did in <strong>one
+                            semester</strong>.</p>
+                </li>
+                <li class="flex items-start gap-4">
+                    <div class="w-8 h-8 rounded-full bg-cyan-50 flex items-center justify-center flex-shrink-0">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-cyan-600" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                    </div>
+                    <p class="text-slate-600 text-sm"><strong>CGPA</strong> = your <strong>overall performance</strong>
+                        from year 1 till now.</p>
+                </li>
+                <li class="flex items-start gap-4">
+                    <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center flex-shrink-0">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-500" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                        </svg>
+                    </div>
+                    <p class="text-slate-600 text-sm">Both are calculated using: <strong>Total Points ÷ Total
+                            Units</strong>.</p>
+                </li>
+            </ul>
+        </section>
+    </main>
+
+    <!-- CTA Popup -->
+    <div id="cta-popup"
+        class="fixed inset-0 z-[100] hidden flex items-center justify-center px-4 bg-slate-900/60 backdrop-blur-md">
+        <div
+            class="max-w-md w-full glass rounded-[2.5rem] p-10 shadow-3xl text-center space-y-8 pop-in border-emerald-500/20 relative">
+            <button onclick="document.getElementById('cta-popup').remove()"
+                class="absolute top-6 right-6 w-8 h-8 glass rounded-full flex items-center justify-center text-slate-400 hover:text-slate-800 transition-colors border border-slate-100">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+
+            <div
+                class="w-20 h-20 bg-emerald-50 rounded-3xl flex items-center justify-center mx-auto border border-emerald-100">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-emerald-600" fill="none"
+                    viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                </svg>
+            </div>
+
+            <div>
+                <h4 class="text-2xl font-black text-slate-800 uppercase tracking-tight mb-3">Calculate Now!</h4>
+                <p class="text-sm font-medium text-slate-500 leading-relaxed px-4">Use our official GPA and CGPA
+                    calculator to track your academic performance instantly.</p>
+            </div>
+
+            <a href="index"
+                class="block w-full py-4 bg-emerald-500 rounded-2xl text-white text-xs font-black uppercase tracking-[0.2em] hover:bg-emerald-400 transition-all shadow-xl shadow-emerald-500/20">
+                Go to Calculator
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // Show popup after 3 seconds
+        setTimeout(() => {
+            const popup = document.getElementById('cta-popup');
+            if (popup) {
+                popup.classList.remove('hidden');
+                popup.classList.add('flex');
+            }
+        }, 3000);
+    </script>
+</body>
+
+</html>

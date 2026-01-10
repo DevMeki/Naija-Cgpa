@@ -1,0 +1,26 @@
+CREATE DATABASE IF NOT EXISTS `cgpa_calculator`;
+USE `cgpa_calculator`;
+
+CREATE TABLE IF NOT EXISTS `users` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `username` VARCHAR(50) NOT NULL UNIQUE,
+    `email` VARCHAR(100) NOT NULL UNIQUE,
+    `password` VARCHAR(255) NOT NULL,
+    `reset_code` VARCHAR(10) DEFAULT NULL,
+    `reset_expires_at` DATETIME DEFAULT NULL,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS `academic_data` (
+    `user_id` INT PRIMARY KEY,
+    `data` LONGTEXT NOT NULL,
+    `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS `site_visits` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `ip_address` VARCHAR(45) NOT NULL,
+    `page_url` VARCHAR(255) NOT NULL,
+    `visited_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

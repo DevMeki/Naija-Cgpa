@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auth | Naija Cgpa</title>
+    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0056D2;
+            --primary-light: #0081FF;
+            --success: #00B86B;
+            --bg-body: #F1F5F9;
+            --text-main: #0F172A;
+            --text-muted: #475569;
+            --border-light: rgba(15, 23, 42, 0.08);
+            --glass-white: rgba(255, 255, 255, 0.85);
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+        }
+
+        .glass {
+            background: var(--glass-white);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-light);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.04);
+        }
+
+        .blue-gradient {
+            background: linear-gradient(135deg, #0056D2 0%, #0081FF 100%);
+        }
+
+        .pop-in {
+            animation: popIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes popIn {
+            from {
+                transform: scale(0.95);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+
+<body class="min-h-screen flex items-center justify-center p-4">
+    <div class="w-full max-w-md glass rounded-[2.5rem] p-8 space-y-8 pop-in">
+        <div class="text-center">
+            <div
+                class="w-12 h-12 blue-gradient rounded-xl flex items-center justify-center font-black text-white text-xl shadow-lg shadow-blue-500/20 mx-auto mb-4">
+                NS</div>
+            <h1 id="auth-title" class="text-2xl font-extrabold tracking-tight text-slate-800">Welcome Back</h1>
+            <p id="auth-subtitle" class="text-sm text-slate-500 font-medium">Log in to sync your academic data</p>
+        </div>
+
+        <form id="auth-form" class="space-y-4">
+            <input type="hidden" id="auth-action" name="action" value="login">
+
+            <div id="username-field" class="hidden">
+                <label
+                    class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-2 mb-2 block">Username</label>
+                <input type="text" id="username-input" name="username"
+                    class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 px-6 text-sm font-bold text-slate-900 outline-none focus:border-indigo-500 focus:bg-white transition-all"
+                    placeholder="johndoe">
+            </div>
+
+            <div id="email-field">
+                <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-2 mb-2 block">Email
+                    Address</label>
+                <input type="email" id="email-input" name="email" required
+                    class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 px-6 text-sm font-bold text-slate-900 outline-none focus:border-indigo-500 focus:bg-white transition-all"
+                    placeholder="name@school.edu.ng">
+            </div>
+
+            <div id="code-field" class="hidden">
+                <label
+                    class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-2 mb-2 block">Verification
+                    Code</label>
+                <input type="text" id="code-input" name="code"
+                    class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 px-6 text-sm font-bold text-slate-900 outline-none focus:border-indigo-500 focus:bg-white transition-all text-center tracking-[0.5em] text-lg"
+                    placeholder="123456">
+            </div>
+
+            <div id="password-field">
+                <label id="password-label"
+                    class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-2 mb-2 block">Password</label>
+                <input type="password" id="password-input" name="password" required
+                    class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 px-6 text-sm font-bold text-slate-900 outline-none focus:border-indigo-500 focus:bg-white transition-all"
+                    placeholder="••••••••">
+            </div>
+
+            <button type="submit" id="submit-btn"
+                class="w-full py-4 rounded-2xl bg-indigo-600 text-white font-black uppercase tracking-widest text-xs hover:bg-indigo-500 transition-all shadow-xl shadow-indigo-600/20 hover:scale-[1.02]">
+                Log In
+            </button>
+        </form>
+
+        <div class="text-center space-y-4">
+            <button id="forgot-password"
+                class="text-[10px] font-bold text-slate-500 hover:text-indigo-600 transition-colors block mx-auto">
+                Forgot Password?
+            </button>
+            <button id="toggle-auth" class="text-xs font-bold text-slate-500 hover:text-indigo-600 transition-colors">
+                Don't have an account? <span class="text-indigo-600">Sign Up</span>
+            </button>
+        </div>
+
+        <div id="auth-message" class="text-center text-xs font-bold hidden"></div>
+    </div>
+
+    <script>
+        const form = document.getElementById('auth-form');
+        const toggleBtn = document.getElementById('toggle-auth');
+        const forgotBtn = document.getElementById('forgot-password');
+        const actionInput = document.getElementById('auth-action');
+        const title = document.getElementById('auth-title');
+        const subtitle = document.getElementById('auth-subtitle');
+        const submitBtn = document.getElementById('submit-btn');
+
+        const usernameField = document.getElementById('username-field');
+        const emailField = document.getElementById('email-field');
+        const codeField = document.getElementById('code-field');
+        const passwordField = document.getElementById('password-field');
+        const passwordLabel = document.getElementById('password-label');
+
+        const usernameInput = document.getElementById('username-input');
+        const emailInput = document.getElementById('email-input');
+        const passwordInput = document.getElementById('password-input');
+        const codeInput = document.getElementById('code-input');
+
+        const messageBox = document.getElementById('auth-message');
+
+        function resetFields() {
+            usernameField.classList.add('hidden');
+            emailField.classList.remove('hidden');
+            codeField.classList.add('hidden');
+            passwordField.classList.remove('hidden');
+            passwordLabel.innerText = 'Password';
+            passwordInput.placeholder = '••••••••';
+            usernameInput.required = false;
+            passwordInput.required = true;
+            codeInput.required = false;
+            forgotBtn.classList.remove('hidden');
+        }
+
+        toggleBtn.addEventListener('click', () => {
+            resetFields();
+            if (actionInput.value !== 'register') {
+                actionInput.value = 'register';
+                title.innerText = 'Create Account';
+                subtitle.innerText = 'Join scholarship-ready students';
+                submitBtn.innerText = 'Sign Up';
+                usernameField.classList.remove('hidden');
+                usernameInput.required = true;
+                toggleBtn.innerHTML = 'Already have an account? <span class="text-indigo-600">Log In</span>';
+            } else {
+                actionInput.value = 'login';
+                title.innerText = 'Welcome Back';
+                subtitle.innerText = 'Log in to sync your academic data';
+                submitBtn.innerText = 'Log In';
+                toggleBtn.innerHTML = "Don't have an account? <span class='text-indigo-600'>Sign Up</span>";
+            }
+        });
+
+        forgotBtn.addEventListener('click', () => {
+            resetFields();
+            actionInput.value = 'forgot_password';
+            title.innerText = 'Reset Password';
+            subtitle.innerText = 'Enter your email to receive a code';
+            submitBtn.innerText = 'Send Code';
+            passwordField.classList.add('hidden');
+            passwordInput.required = false;
+            forgotBtn.classList.add('hidden');
+            toggleBtn.innerHTML = "Back to <span class='text-indigo-600'>Log In</span>";
+            // Set toggle to switch back to login
+            actionInput.value = 'forgot_password';
+        });
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(form);
+            messageBox.className = 'text-center text-xs font-bold text-slate-400 block';
+            messageBox.innerText = 'Processing...';
+
+            try {
+                const response = await fetch('auth_process.php', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const text = await response.text();
+
+                if (!response.ok) {
+                    messageBox.className = 'text-center text-xs font-bold text-rose-500 block';
+                    messageBox.innerText = 'Server Error. Please try again later.';
+                    return;
+                }
+
+                let result;
+                try {
+                    result = JSON.parse(text);
+                } catch (jsonErr) {
+                    messageBox.className = 'text-center text-xs font-bold text-rose-500 block';
+                    messageBox.innerText = 'Invalid response from server.';
+                    return;
+                }
+
+                if (result.success) {
+                    messageBox.className = 'text-center text-xs font-bold text-emerald-500 block';
+                    messageBox.innerText = result.message;
+
+                    if (actionInput.value === 'login' || actionInput.value === 'register') {
+                        setTimeout(() => window.location.href = 'index', 1000);
+                    } else if (actionInput.value === 'forgot_password') {
+                        // Switch to verify code
+                        actionInput.value = 'verify_code';
+                        title.innerText = 'Verify Code';
+                        subtitle.innerText = 'Enter the 6-digit code sent to your email';
+                        submitBtn.innerText = 'Verify Code';
+                        emailField.classList.add('hidden'); // Keep email in formData but hide field
+                        codeField.classList.remove('hidden');
+                        codeInput.required = true;
+                    } else if (actionInput.value === 'verify_code') {
+                        // Switch to reset password
+                        actionInput.value = 'reset_password';
+                        title.innerText = 'New Password';
+                        subtitle.innerText = 'Set your new secure password';
+                        submitBtn.innerText = 'Reset Password';
+                        codeField.classList.add('hidden');
+                        passwordField.classList.remove('hidden');
+                        passwordLabel.innerText = 'New Password';
+                        passwordInput.required = true;
+                    } else if (actionInput.value === 'reset_password') {
+                        setTimeout(() => {
+                            resetFields();
+                            actionInput.value = 'login';
+                            title.innerText = 'Welcome Back';
+                            subtitle.innerText = 'Log in with your new password';
+                            submitBtn.innerText = 'Log In';
+                            toggleBtn.innerHTML = "Don't have an account? <span class='text-indigo-600'>Sign Up</span>";
+                            messageBox.classList.add('hidden');
+                        }, 2000);
+                    }
+                } else {
+                    messageBox.className = 'text-center text-xs font-bold text-rose-500 block';
+                    messageBox.innerText = result.error;
+                }
+            } catch (err) {
+                console.error('Fetch error:', err);
+                messageBox.className = 'text-center text-xs font-bold text-rose-500 block';
+                messageBox.innerText = `Connection Error: ${err.message}`;
+            }
+        });
+    </script>
+</body>
+
+</html>
