@@ -353,9 +353,206 @@ if (isset($_SESSION['user_id']) && !isset($_SESSION['email'])) {
                     </button>
                 </div>
 
+                <?php
+                // Default clean state
+                $semesterHtml = '';
+                $appState = null;
+
+                if (isset($_SESSION['user_id'])) {
+                    try {
+                        // DB Connection is available via tracker.php -> db.php
+                        // Check if $pdo is available, if not, strict connect
+                        if (!isset($pdo)) {
+                            require_once 'db.php';
+                        }
+
+                        $stmt = $pdo->prepare("SELECT data FROM academic_data WHERE user_id = ?");
+                        $stmt->execute([$_SESSION['user_id']]);
+                        $row = $stmt->fetch();
+
+                        if ($row && $row['data']) {
+                            $appState = json_decode($row['data'], true);
+
+                            // Determine active context
+                            $lvl = $appState['lvl'] ?? 100;
+                            $semIdx = $appState['activeSemIndex'] ?? 1; // Default to 1st sem
+                
+                            // Get semester data
+                            $semData = $appState['db'][$lvl][$semIdx] ?? null;
+
+                            if ($semData) {
+                                // Decide what to render based on mode
+                                $mode = $semData['mode'] ?? 'empty';
+
+                                if ($mode === 'quick') {
+                                    $gpa = $semData['gpa'] ?? '';
+                                    $units = $semData['units'] ?? '';
+
+                                    $semesterHtml = '
+                                    <div class="bg-white rounded-[2rem] p-8 pop-in border-l-4 border-success shadow-sm" data-sem="' . $semIdx . '">
+                                        <div class="flex justify-between items-center mb-8 px-2">
+                                            <h3 class="text-[10px] font-black text-slate-800 uppercase tracking-[0.2em] sem-label">' . ($semIdx == 1 ? "First Semester" : "Second Semester") . '</h3>
+                                            <button onclick="setupSem(this, \'detail\')" class="text-[9px] font-black text-primary-light uppercase">Switch to Detail</button>
+                                        </div>
+                                        <div class="grid grid-cols-2 gap-6">
+                                            <div>
+                                                <label class="text-[8px] font-black text-slate-400 uppercase mb-3 block px-2">GPA Value</label>
+                                                <input type="number" step="0.01" placeholder="0.00" value="' . htmlspecialchars($gpa) . '" class="inp-gpa w-full bg-slate-50 border border-slate-100 rounded-2xl py-4 px-6 text-2xl font-black text-slate-800 outline-none focus:border-success/30">
+                                            </div>
+                                            <div>
+                                                <label class="text-[8px] font-black text-slate-400 uppercase mb-3 block px-2">Total Units</label>
+                                                <input type="number" placeholder="0" value="' . htmlspecialchars($units) . '" class="inp-units w-full bg-slate-50 border border-slate-100 rounded-2xl py-4 px-6 text-2xl font-black text-slate-800 outline-none focus:border-success/30">
+                                            </div>
+                                        </div>
+                                        <div class="mt-8 pt-4 border-t border-slate-50 flex justify-end">
+                                            <button onclick="resetSem(this)" class="text-[9px] font-black text-rose-300 uppercase">Clear All</button>
+                                        </div>
+                                    </div>';
+
+                                } elseif ($mode === 'detail') {
+                                    $type = $semData['type'] ?? 'grade';
+                                    $items = $semData['items'] ?? [];
+
+                                    // Ensure 4 items minimum
+                                    if (count($items) < 4) {
+                                        for ($i = count($items); $i < 4; $i++) {
+                                            $items[] = ['u' => '', 'g' => '', 's' => ''];
+                                        }
+                                    }
+
+                                    // Calc Meta
+                                    $metaCount = 0;
+                                    $metaUnits = 0;
+                                    foreach ($items as $it) {
+                                        if (isset($it['u']) && is_numeric($it['u']) && $it['u'] > 0) {
+                                            $metaCount++;
+                                            $metaUnits += $it['u'];
+                                        }
+                                    }
+
+                                    // Buttons Classes
+                                    $btnGradeClass = $type === 'grade'
+                                        ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/10"
+                                        : "text-slate-400 hover:text-slate-600";
+
+                                    $btnScoreClass = $type === 'score'
+                                        ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/10"
+                                        : "text-slate-400 hover:text-slate-600";
+
+                                    // Rows HTML
+                                    $rowsHtml = '';
+                                    foreach ($items as $item) {
+                                        $n = htmlspecialchars($item['n'] ?? '');
+                                        $u = htmlspecialchars($item['u'] ?? '');
+                                        $g = htmlspecialchars($item['g'] ?? '');
+                                        $s = htmlspecialchars($item['s'] ?? '');
+
+                                        $rowsHtml .= '
+                                        <tr class="course-item group border-b border-slate-50 last:border-0 slide-up">
+                                            <td class="py-2 pr-2">
+                                                <input type="text" placeholder="e.g. MTH101" value="' . $n . '"
+                                                    class="inp-name w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-xs font-bold text-slate-900 outline-none focus:border-indigo-500 focus:bg-white transition-all">
+                                            </td>
+                                            <td class="py-2 px-1">
+                                                <input type="number" placeholder="0" value="' . $u . '"
+                                                    class="inp-u w-full bg-slate-50 border border-slate-200 rounded-xl py-3 text-center text-xs font-bold text-slate-900 outline-none focus:border-indigo-500 focus:bg-white transition-all">
+                                            </td>
+                                            <td class="py-2 pl-2">
+                                                <div class="relative">
+                                                    <select class="inp-g w-full bg-slate-50 border border-slate-200 rounded-xl py-3 text-center text-xs font-bold text-indigo-600 outline-none appearance-none cursor-pointer focus:border-indigo-500 focus:bg-white transition-all ' . ($type === 'score' ? 'hidden' : '') . '">
+                                                        <option value="">--</option>
+                                                        <option value="5" ' . ($g == '5' ? 'selected' : '') . '>A</option>
+                                                        <option value="4" ' . ($g == '4' ? 'selected' : '') . '>B</option>
+                                                        <option value="3" ' . ($g == '3' ? 'selected' : '') . '>C</option>
+                                                        <option value="2" ' . ($g == '2' ? 'selected' : '') . '>D</option>
+                                                        <option value="1" ' . ($g == '1' ? 'selected' : '') . '>E</option>
+                                                        <option value="0" ' . ($g == '0' ? 'selected' : '') . '>F</option>
+                                                    </select>
+                                                    <input type="number" placeholder="0-100" value="' . $s . '"
+                                                        class="inp-s w-full bg-slate-50 border border-slate-200 rounded-xl py-3 text-center text-xs font-bold text-indigo-600 outline-none focus:border-indigo-500 focus:bg-white transition-all ' . ($type !== 'score' ? 'hidden' : '') . '">
+                                                </div>
+                                            </td>
+                                            <td class="py-2 pl-2 text-center">
+                                                <button onclick="this.closest(\'.course-item\').remove(); calc();" class="w-8 h-8 rounded-xl flex items-center justify-center text-slate-300 hover:text-rose-500 hover:bg-rose-50 transition-all font-bold">×</button>
+                                            </td>
+                                        </tr>';
+                                    }
+
+                                    $semesterHtml = '
+                                    <div class="bg-white rounded-[2rem] p-6 pop-in border-l-4 border-indigo-500 shadow-sm" data-sem="' . $semIdx . '">
+                                        <div class="flex justify-between items-center mb-6 px-1">
+                                            <div>
+                                                <h3 class="text-[10px] font-black text-slate-800 uppercase tracking-[0.2em] sem-label">' . ($semIdx == 1 ? "First Semester" : "Second Semester") . '</h3>
+                                                <p class="text-[8px] font-black text-slate-400 uppercase mt-1 sem-meta">' . $metaCount . ' COURSES • ' . $metaUnits . ' UNITS</p>
+                                            </div>
+                                            <div class="flex bg-slate-100 p-1 rounded-xl">
+                                                <button onclick="toggleInputType(this, \'grade\')" class="btn-grade px-4 py-1.5 rounded-lg text-[9px] font-black transition-all ' . $btnGradeClass . '">GRADE</button>
+                                                <button onclick="toggleInputType(this, \'score\')" class="btn-score px-4 py-1.5 rounded-lg text-[9px] font-black transition-all ' . $btnScoreClass . '">SCORE</button>
+                                            </div>
+                                        </div>
+
+                                        <div class="w-full overflow-x-auto">
+                                            <table class="w-full text-left border-collapse">
+                                                <thead>
+                                                    <tr>
+                                                        <th class="text-[8px] font-black text-slate-400 uppercase pb-3 pl-2 w-1/2">Course Code</th>
+                                                        <th class="text-[8px] font-black text-slate-400 uppercase pb-3 text-center w-1/4">Units</th>
+                                                        <th class="text-[8px] font-black text-slate-400 uppercase pb-3 text-center w-1/4 val-label">' . ($type === 'score' ? 'Score' : 'Grade') . '</th>
+                                                        <th class="w-8"></th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody class="course-list space-y-2">
+                                                    ' . $rowsHtml . '
+                                                </tbody>
+                                            </table>
+                                        </div>
+
+                                        <div class="mt-6 flex flex-col gap-3">
+                                            <button onclick="addNewCourse(this)" class="w-full py-4 rounded-2xl bg-indigo-50 border border-indigo-100 text-indigo-600 text-[10px] font-black uppercase tracking-widest hover:bg-indigo-100 transition-all">
+                                                + Add Course
+                                            </button>
+                                            <div class="flex justify-between items-center mt-2 px-2">
+                                                <button onclick="setupSem(this, \'quick\')" class="text-[9px] font-black text-slate-400 uppercase hover:text-indigo-500">Switch to Quick</button>
+                                                <button onclick="resetSem(this)" class="text-[9px] font-black text-rose-300 uppercase hover:text-rose-500">Reset</button>
+                                            </div>
+                                        </div>
+                                    </div>';
+                                }
+                            }
+                        }
+                    } catch (Exception $e) {
+                        // Fail silently, fall back to JS default (empty)
+                    }
+                }
+
+                // If no SSR HTML, use default empty View (handled by JS, but we can pre-render empty too for consistency)
+                if (empty($semesterHtml)) {
+                    $semesterHtml = '
+                    <div class="bg-white rounded-[2rem] p-8 text-center border border-slate-100 shadow-sm pop-in" data-sem="1">
+                        <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-8 sem-label">First Semester</h3>
+                        <div class="grid grid-cols-1 gap-4">
+                            <button onclick="setupSem(this, \'quick\')" class="p-6 rounded-2xl bg-slate-50 border border-slate-100 flex flex-col items-center gap-2 group active:scale-95 transition-all">
+                                <span class="text-lg font-bold text-slate-700 group-hover:text-primary">GPA & Units Entry</span>
+                                <span class="text-[9px] text-slate-400 uppercase tracking-widest font-black">Quick Mode</span>
+                            </button>
+                            <button onclick="setupSem(this, \'detail\')" class="p-6 rounded-2xl bg-slate-50 border border-slate-100 flex flex-col items-center gap-2 group active:scale-95 transition-all">
+                                <span class="text-lg font-bold text-slate-700 group-hover:text-primary">Course by Course</span>
+                                <span class="text-[9px] text-slate-400 uppercase tracking-widest font-black">Detailed Mode</span>
+                            </button>
+                        </div>
+                    </div>';
+                }
+                ?>
+
                 <div id="semester-container" class="space-y-8">
-                    <!-- Semester content injected here -->
+                    <?php echo $semesterHtml; ?>
                 </div>
+
+                <script>
+                    <?php if ($appState): ?>
+                        window.serverAppState = <?php echo json_encode($appState); ?>;
+                    <?php endif; ?>
+                </script>
             </div>
 
             <!-- Right: Fixed Summary -->
@@ -566,7 +763,7 @@ if (isset($_SESSION['user_id']) && !isset($_SESSION['email'])) {
                 </div>
                 <div>
                     <h5 class="font-bold mb-6 text-sm uppercase tracking-widest text-slate-500">Connect</h5>
-                    <p class="text-sm font-bold text-slate-300 mb-4">support@naijacgpa.ng</p>
+                    <p class="text-sm font-bold text-slate-300 mb-4">devemmanueleze@gmail.com</p>
                     <div class="flex gap-4">
                         <a href="https://x.com">
                             <div

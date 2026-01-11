@@ -440,10 +440,20 @@ function toggleSection(id) {
 }
 
 async function load() {
-  const saved = localStorage.getItem("ns_final_v3");
-  if (saved) {
-    appState = JSON.parse(saved);
+  // 1. Priority: Server-Injected State (SSR Hydration)
+  if (window.serverAppState) {
+    appState = window.serverAppState;
+    // ensure activeSemIndex is set
     if (!appState.activeSemIndex) appState.activeSemIndex = 1;
+    saveLocal(); // Sync local storage to match authoritative DB data
+  } 
+  // 2. Fallback: Local Storage
+  else {
+    const saved = localStorage.getItem("ns_final_v3");
+    if (saved) {
+      appState = JSON.parse(saved);
+      if (!appState.activeSemIndex) appState.activeSemIndex = 1;
+    }
   }
 
   // Try to sync from server
