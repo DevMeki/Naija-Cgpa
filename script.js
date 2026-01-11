@@ -488,9 +488,8 @@ let saveTimeout;
 function save() {
   saveLocal();
 
-  // Auto-sync if logged in
-  const loggedInControls = document.getElementById("logged-in-controls");
-  if (loggedInControls && !loggedInControls.classList.contains("hidden")) {
+  // Auto-sync if logged in (serverAppState presence indicates login)
+  if (window.serverAppState) {
     clearTimeout(saveTimeout);
     saveTimeout = setTimeout(() => {
       saveRemote(true); // true means silent/background save
@@ -499,15 +498,17 @@ function save() {
 }
 
 async function saveRemote(silent = false) {
-  const btn = document.getElementById("btn-save");
-  if (!btn) return;
-
-  const originalText = btn.innerText;
+  // Try to find any visible save button to update text (optional)
+  const buttons = document.querySelectorAll('button[onclick*="saveRemote"]');
+  
   if (!silent) {
-    btn.innerText = "Saving...";
-    btn.disabled = true;
-  } else {
-    btn.classList.add("opacity-50");
+    buttons.forEach(btn => {
+      if(btn.offsetParent !== null) { // if visible
+          btn.dataset.originalText = btn.innerText;
+          btn.innerText = "Saving...";
+          btn.disabled = true;
+      }
+    });
   }
 
   try {
@@ -518,23 +519,30 @@ async function saveRemote(silent = false) {
     const result = await response.json();
     if (result.success) {
       if (!silent) {
-        btn.innerText = "Saved!";
-        btn.classList.add("text-emerald-400");
+        buttons.forEach(btn => {
+            if(btn.dataset.originalText) {
+                btn.innerText = "Saved!";
+                btn.classList.add("text-emerald-400");
+            }
+        });
+        showToast("Record Saved Successfully");
       }
     } else if (!silent) {
-      btn.innerText = "Error";
+      showToast("Error saving record");
     }
   } catch (e) {
-    if (!silent) btn.innerText = "Failed";
+    if (!silent) showToast("Bummer! Save failed.");
   } finally {
     if (!silent) {
       setTimeout(() => {
-        btn.innerText = originalText;
-        btn.disabled = false;
-        btn.classList.remove("text-emerald-400");
+        buttons.forEach(btn => {
+             if(btn.dataset.originalText) {
+                btn.innerText = btn.dataset.originalText;
+                btn.disabled = false;
+                btn.classList.remove("text-emerald-400");
+             }
+        });
       }, 2000);
-    } else {
-      btn.classList.remove("opacity-50");
     }
   }
 }
