@@ -1,6 +1,16 @@
 <?php
 session_start();
 require_once 'tracker.php';
+
+// Ensure email is in session for role checks
+if (isset($_SESSION['user_id']) && !isset($_SESSION['email'])) {
+    $stmt = $pdo->prepare("SELECT email FROM users WHERE id = ?");
+    $stmt->execute([$_SESSION['user_id']]);
+    $user = $stmt->fetch();
+    if ($user) {
+        $_SESSION['email'] = $user['email'];
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -541,8 +551,10 @@ require_once 'tracker.php';
                     <ul class="space-y-4 text-sm font-bold text-slate-300">
                         <li><a href="#calculator" class="hover:text-primary-light transition-colors">Calculator</a></li>
                         <li><a href="help.html" class="hover:text-primary-light transition-colors">Help Guide</a></li>
-                        <li><a href="admin_dashboard.php" class="hover:text-primary-light transition-colors">Admin
-                                Dashboard</a></li>
+                        <?php if (isset($_SESSION['email']) && $_SESSION['email'] === 'youremail@gmail.com'): ?>
+                            <li><a href="admin_dashboard.php" class="hover:text-primary-light transition-colors">Admin
+                                    Dashboard</a></li>
+                        <?php endif; ?>
                     </ul>
                 </div>
                 <div>

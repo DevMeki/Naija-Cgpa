@@ -48,18 +48,20 @@ try {
         $userId = $pdo->lastInsertId();
         $_SESSION['user_id'] = $userId;
         $_SESSION['username'] = $username;
+        $_SESSION['email'] = $email;
         sendResponse(['success' => true, 'message' => 'Registration successful!']);
 
     } elseif ($action === 'login') {
         if (empty($email) || empty($password)) {
             sendResponse(['success' => false, 'error' => 'Email and Password are required']);
         }
-        $stmt = $pdo->prepare("SELECT id, username, password FROM users WHERE email = ?");
+        $stmt = $pdo->prepare("SELECT id, username, email, password FROM users WHERE email = ?");
         $stmt->execute([$email]);
         $user = $stmt->fetch();
         if ($user && password_verify($password, $user['password'])) {
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['username'] = $user['username'];
+            $_SESSION['email'] = $user['email'];
             sendResponse(['success' => true, 'message' => 'Login successful!']);
         } else {
             sendResponse(['success' => false, 'error' => 'Invalid email or password']);
