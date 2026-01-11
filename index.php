@@ -214,7 +214,7 @@ if (isset($_SESSION['user_id']) && !isset($_SESSION['email'])) {
                     Up</a>
             <?php else: ?>
                 <button onclick="saveRemote(); toggleMobileMenu()"
-                    class="bg-blue-50 text-primary-light py-4 rounded-xl font-bold text-center">Save Record</button>
+                    class="hidden bg-blue-50 text-primary-light py-4 rounded-xl font-bold text-center">Save Record</button>
                 <a href="profile" class="bg-slate-100 text-slate-600 py-4 rounded-xl font-bold text-center">My Profile</a>
             <?php endif; ?>
         </div>
@@ -342,15 +342,24 @@ if (isset($_SESSION['user_id']) && !isset($_SESSION['email'])) {
             <!-- Left: Workspace -->
             <div class="lg:col-span-8 space-y-8 slide-up">
                 <!-- Semester Toggle -->
-                <div class="flex gap-2 mb-4 p-1 bg-slate-100 rounded-2xl w-fit">
-                    <button onclick="switchSemester(1)" id="sem-btn-1"
-                        class="px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all bg-white text-primary shadow-sm">
-                        1st Semester
-                    </button>
-                    <button onclick="switchSemester(2)" id="sem-btn-2"
-                        class="px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all text-slate-400 hover:text-slate-600">
-                        2nd Semester
-                    </button>
+                <div class="flex justify-between items-center mb-4">
+                    <div class="flex gap-2 p-1 bg-slate-100 rounded-2xl w-fit">
+                        <button onclick="switchSemester(1)" id="sem-btn-1"
+                            class="px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all bg-white text-primary shadow-sm">
+                            1st Semester
+                        </button>
+                        <button onclick="switchSemester(2)" id="sem-btn-2"
+                            class="px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all text-slate-400 hover:text-slate-600">
+                            2nd Semester
+                        </button>
+                    </div>
+
+                    <?php if (isset($_SESSION['user_id'])): ?>
+                        <button onclick="saveRemote()"
+                            class="md:hidden bg-blue-50 text-primary-light px-5 py-2.5 rounded-xl font-bold text-xs hover:bg-blue-100 transition-all shadow-sm">
+                            Save
+                        </button>
+                    <?php endif; ?>
                 </div>
 
                 <?php
