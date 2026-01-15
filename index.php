@@ -995,6 +995,49 @@ if (isset($_SESSION['user_id']) && !isset($_SESSION['email'])) {
         </div>
     </div>
 
+    <!-- PDF SELECTION MODAL -->
+    <div id="pdf-selection-modal"
+        class="fixed inset-0 z-[110] hidden items-center justify-center px-4 bg-slate-900/60 backdrop-blur-md overflow-hidden">
+        <div class="max-w-md w-full bg-white rounded-[2rem] shadow-2xl relative pop-in flex flex-col max-h-[90vh]">
+            <button onclick="closePDFModal()"
+                class="absolute top-6 right-6 w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-800 transition z-10">×</button>
+
+            <div class="text-center p-8 pb-4 flex-shrink-0">
+                <div
+                    class="w-14 h-14 bg-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
+                    </svg>
+                </div>
+                <h3 class="text-xl font-black text-slate-800">Export to PDF</h3>
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Select semesters to include
+                </p>
+            </div>
+
+            <!-- Scrollable Selection List -->
+            <div class="flex-1 overflow-y-auto px-8 py-4" style="max-height: calc(90vh - 280px);">
+                <div class="space-y-4" id="pdf-selection-list">
+                    <!-- Dynamic content will be inserted here -->
+                </div>
+            </div>
+
+            <!-- Fixed Action Buttons -->
+            <div class="flex-shrink-0 p-8 pt-4 border-t border-slate-200">
+                <div class="flex gap-3">
+                    <button onclick="selectAllSemesters()"
+                        class="flex-1 py-3 bg-slate-100 text-slate-700 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-slate-200 transition-all">
+                        Select All
+                    </button>
+                    <button onclick="generateSelectedPDF()"
+                        class="flex-1 py-3 bg-indigo-600 text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-500/20">
+                        Generate PDF
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- SHARE MODAL -->
     <div id="share-modal"
         class="fixed inset-0 z-[110] hidden flex items-center justify-center px-4 bg-slate-900/60 backdrop-blur-md">

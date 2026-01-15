@@ -583,15 +583,134 @@ function resetAll() {
   }
 }
 
-// Export PDF
+// Export PDF - Show Selection Modal
 async function exportPDF() {
+  const modal = document.getElementById('pdf-selection-modal');
+  const list = document.getElementById('pdf-selection-list');
+  
+  // Build selection list
+  list.innerHTML = '';
+  
+  let hasAnyData = false;
+  
+  // Iterate through all levels
+  Object.keys(appState.db).sort((a, b) => parseInt(a) - parseInt(b)).forEach(lvl => {
+    const levelData = appState.db[lvl];
+    
+    // Function to check if semester has actual data
+    const hasData = (semData) => {
+      if (!semData || semData.mode === 'empty') return false;
+      
+      if (semData.mode === 'quick') {
+        return semData.units > 0 && semData.gpa > 0;
+      }
+      
+      if (semData.mode === 'detail') {
+        // Check if there's at least one course with units
+        return semData.items && semData.items.some(item => item.u > 0);
+      }
+      
+      return false;
+    };
+    
+    // Check if level has any data
+    const hasSem1 = hasData(levelData[1]);
+    const hasSem2 = hasData(levelData[2]);
+    
+    if (hasSem1 || hasSem2) {
+      hasAnyData = true;
+      const levelSection = document.createElement('div');
+      levelSection.className = 'bg-slate-50 rounded-xl p-4 space-y-3';
+      
+      let levelHTML = `
+        <div class="flex items-center justify-between mb-2">
+          <h4 class="text-sm font-black text-slate-700 uppercase tracking-wider">Level ${lvl}</h4>
+        </div>
+      `;
+      
+      if (hasSem1) {
+        levelHTML += `
+          <label class="flex items-center gap-3 p-3 bg-white rounded-lg cursor-pointer hover:bg-indigo-50 transition-all border border-slate-200">
+            <input type="checkbox" class="pdf-semester-checkbox w-4 h-4 text-indigo-600 rounded" 
+                   data-level="${lvl}" data-semester="1" checked>
+            <span class="text-xs font-bold text-slate-700">First Semester</span>
+          </label>
+        `;
+      }
+      
+      if (hasSem2) {
+        levelHTML += `
+          <label class="flex items-center gap-3 p-3 bg-white rounded-lg cursor-pointer hover:bg-indigo-50 transition-all border border-slate-200">
+            <input type="checkbox" class="pdf-semester-checkbox w-4 h-4 text-indigo-600 rounded" 
+                   data-level="${lvl}" data-semester="2" checked>
+            <span class="text-xs font-bold text-slate-700">Second Semester</span>
+          </label>
+        `;
+      }
+      
+      levelSection.innerHTML = levelHTML;
+      list.appendChild(levelSection);
+    }
+  });
+  
+  // If no data found, show message
+  if (!hasAnyData) {
+    list.innerHTML = `
+      <div class="text-center py-8">
+        <p class="text-sm font-bold text-slate-400">No semester data available</p>
+        <p class="text-xs text-slate-400 mt-2">Add some courses to generate a PDF</p>
+      </div>
+    `;
+  }
+  
+  // Show modal - prevent body scroll
+  document.body.style.overflow = 'hidden';
+  modal.classList.remove('hidden');
+  modal.classList.add('flex');
+}
+
+function closePDFModal() {
+  const modal = document.getElementById('pdf-selection-modal');
+  document.body.style.overflow = '';
+  modal.classList.add('hidden');
+  modal.classList.remove('flex');
+}
+
+function selectAllSemesters() {
+  const checkboxes = document.querySelectorAll('.pdf-semester-checkbox');
+  checkboxes.forEach(cb => cb.checked = true);
+}
+
+async function generateSelectedPDF() {
+  const checkboxes = document.querySelectorAll('.pdf-semester-checkbox:checked');
+  
+  if (checkboxes.length === 0) {
+    showToast('Please select at least one semester');
+    return;
+  }
+  
+  // Collect selected semesters
+  const selectedSemesters = [];
+  checkboxes.forEach(cb => {
+    selectedSemesters.push({
+      level: parseInt(cb.dataset.level),
+      semester: parseInt(cb.dataset.semester)
+    });
+  });
+  
+  // Sort by level and semester
+  selectedSemesters.sort((a, b) => {
+    if (a.level !== b.level) return a.level - b.level;
+    return a.semester - b.semester;
+  });
+  
+  // Close modal
+  closePDFModal();
+  
+  // Generate PDF
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
-
-  const lvl = appState.lvl;
-  const activeIdx = appState.activeSemIndex || 1;
-  const s = appState.db[lvl]?.[activeIdx];
-
+  
   // Branding Colors
   const primaryColor = [0, 86, 210]; // #0056D2
   
@@ -606,115 +725,151 @@ async function exportPDF() {
   
   doc.setFontSize(10);
   doc.setFont("helvetica", "normal");
-  doc.text("Created by DevMeki", 105, 26, { align: "center" }); // Branding 1
-
-  // -- DOC INFO --
-  doc.setTextColor(50, 50, 50);
-  doc.setFontSize(12);
-  doc.setFont("helvetica", "bold");
-  doc.text(`Level: ${lvl}L  |  ${activeIdx === 1 ? "First" : "Second"} Semester`, 14, 55);
+  doc.text("Created by DevMeki", 105, 26, { align: "center" });
 
   const date = new Date().toLocaleDateString();
-  doc.setFont("helvetica", "normal");
-  doc.text(`Date: ${date}`, 196, 55, { align: "right" });
+  doc.setTextColor(50, 50, 50);
+  doc.setFontSize(10);
+  doc.text(`Generated: ${date}`, 105, 50, { align: "center" });
+  
+  let currentY = 60;
+  let totalUnits = 0;
+  let totalQP = 0;
+  
+  // Process each selected semester
+  selectedSemesters.forEach((selection, index) => {
+    const { level, semester } = selection;
+    const s = appState.db[level][semester];
+    
+    // Check if we need a new page
+    if (currentY > 240) {
+      doc.addPage();
+      currentY = 20;
+    }
+    
+    // Semester Header
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(...primaryColor);
+    doc.text(`Level ${level}L - ${semester === 1 ? "First" : "Second"} Semester`, 14, currentY);
+    currentY += 8;
+    
+    // Build table data
+    const tableColumn = ["Course Code", "Units", "Grade/Score", "Points"];
+    const tableRows = [];
+    let semUnits = 0;
+    let semQP = 0;
+    
+    if (s) {
+      if (s.mode === "detail") {
+        s.items.forEach((item) => {
+          if (item.u > 0) {
+            let gp = -1;
+            let displayGrade = "";
+            
+            if (s.type === "score") {
+              gp = scoreToGP(item.s);
+              displayGrade = item.s;
+            } else {
+              gp = item.g !== "" ? parseFloat(item.g) : -1;
+              const letterMap = {5:'A', 4:'B', 3:'C', 2:'D', 1:'E', 0:'F'};
+              displayGrade = letterMap[gp] || "-";
+            }
 
-  // -- TABLE --
-  const tableColumn = ["Course Code", "Units", "Grade/Score", "Points"];
-  const tableRows = [];
-
-  let semUnits = 0;
-  let semQP = 0;
-
-  if (s) {
-    if (s.mode === "detail") {
-      s.items.forEach((item) => {
-        if (item.u > 0) {
-          let gp = -1;
-          let displayGrade = "";
-          
-          if (s.type === "score") {
-             gp = scoreToGP(item.s);
-             displayGrade = item.s;
-          } else {
-             gp = item.g !== "" ? parseFloat(item.g) : -1;
-             const letterMap = {5:'A', 4:'B', 3:'C', 2:'D', 1:'E', 0:'F'};
-             displayGrade = letterMap[gp] || "-";
-          }
-
-          if (gp !== -1) {
-            const points = item.u * gp;
-            semUnits += item.u;
-            semQP += points;
-            tableRows.push([
+            if (gp !== -1) {
+              const points = item.u * gp;
+              semUnits += item.u;
+              semQP += points;
+              tableRows.push([
                 item.n || "Course",
                 item.u,
                 displayGrade,
-                points
-            ]);
+                points.toFixed(2)
+              ]);
+            }
           }
-        }
-      });
-    } else if (s.mode === "quick" && s.units > 0) {
+        });
+      } else if (s.mode === "quick" && s.units > 0) {
         semUnits = s.units;
         semQP = s.units * s.gpa;
-        tableRows.push(["Quick Entry", s.units, `GPA: ${s.gpa}`, (semQP).toFixed(2)]);
+        tableRows.push(["Quick Entry", s.units, `GPA: ${s.gpa}`, semQP.toFixed(2)]);
+      }
     }
-  }
-
-  const semGPA = semUnits > 0 ? (semQP / semUnits).toFixed(2) : "0.00";
-
-  // Use autoTable
-  doc.autoTable({
-    head: [tableColumn],
-    body: tableRows,
-    startY: 65,
-    theme: 'grid',
-    headStyles: { fillColor: primaryColor },
-    styles: { font: "helvetica", fontSize: 10 },
+    
+    // Add to totals
+    totalUnits += semUnits;
+    totalQP += semQP;
+    
+    const semGPA = semUnits > 0 ? (semQP / semUnits).toFixed(2) : "0.00";
+    
+    // Generate table
+    doc.autoTable({
+      head: [tableColumn],
+      body: tableRows,
+      startY: currentY,
+      theme: 'grid',
+      headStyles: { fillColor: primaryColor, fontSize: 9 },
+      styles: { font: "helvetica", fontSize: 9 },
+      margin: { left: 14, right: 14 }
+    });
+    
+    currentY = doc.lastAutoTable.finalY + 6;
+    
+    // Semester Summary
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(0, 0, 0);
+    doc.text(`Semester GPA: ${semGPA} | Units: ${semUnits} | QP: ${semQP.toFixed(2)}`, 14, currentY);
+    currentY += 12;
   });
-
-  // -- SUMMARY --
-  let finalY = doc.lastAutoTable.finalY + 10;
   
-  doc.setFontSize(10);
-  doc.setTextColor(0, 0, 0);
+  // Overall Summary
+  if (currentY > 250) {
+    doc.addPage();
+    currentY = 20;
+  }
   
-  doc.text(`Total Semester Units: ${semUnits}`, 14, finalY);
-  finalY += 6;
-  doc.text(`Total Quality Points: ${semQP}`, 14, finalY);
-  finalY += 8;
+  currentY += 5;
+  doc.setDrawColor(200, 200, 200);
+  doc.line(14, currentY, 196, currentY);
+  currentY += 10;
   
-  doc.setFontSize(14);
+  const overallCGPA = totalUnits > 0 ? (totalQP / totalUnits).toFixed(2) : "0.00";
+  
+  // Determine class
+  let classOfDegree = "No Data";
+  const cgpa = parseFloat(overallCGPA);
+  if (totalUnits > 0) {
+    if (cgpa >= 4.5) classOfDegree = "1st Class Honours";
+    else if (cgpa >= 3.5) classOfDegree = "2nd Class Upper (2:1)";
+    else if (cgpa >= 2.4) classOfDegree = "2nd Class Lower (2:2)";
+    else if (cgpa >= 1.5) classOfDegree = "3rd Class Honours";
+    else classOfDegree = "Pass / Fail";
+  }
+  
+  doc.setFontSize(16);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(...primaryColor);
-  doc.text(`Semester GPA: ${semGPA}`, 14, finalY);
-
-  // Global Context
-  const globalCGPA = document.getElementById("global-cgpa").textContent;
-  const globalClass = document.getElementById("global-class").textContent;
+  doc.text(`Overall CGPA: ${overallCGPA}`, 105, currentY, { align: "center" });
+  currentY += 8;
   
-  finalY += 15;
-  doc.setDrawColor(200, 200, 200);
-  doc.line(14, finalY, 196, finalY);
-  finalY += 10;
-
   doc.setFontSize(12);
   doc.setTextColor(50);
-  doc.text(`Cumulative GPA (CGPA): ${globalCGPA}`, 14, finalY);
-  doc.text(`Class: ${globalClass}`, 196, finalY, { align: "right" });
-
-  // -- FOOTER --
+  doc.text(`Total Units: ${totalUnits} | Class: ${classOfDegree}`, 105, currentY, { align: "center" });
+  
+  // Footer on all pages
   const pageCount = doc.internal.getNumberOfPages();
   for(let i = 1; i <= pageCount; i++) {
     doc.setPage(i);
     doc.setFontSize(8);
     doc.setTextColor(150);
-    doc.text(`Naija Cgpa - Created by DevMeki`, 105, 290, { align: "center" }); // Branding 2
+    doc.text(`Naija Cgpa - Created by DevMeki`, 105, 290, { align: "center" });
   }
-
-  doc.save(`NaijaCgpa_${lvl}L_Sem${activeIdx}.pdf`);
+  
+  doc.save(`NaijaCgpa_Report_${date.replace(/\//g, '-')}.pdf`);
   showToast("PDF Downloaded Successfully!");
 }
+
 
 // Export Image
 async function exportImage() {

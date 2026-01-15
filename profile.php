@@ -67,46 +67,69 @@ $globalQP = 0;
 $globalU = 0;
 
 if ($appState && isset($appState['db'])) {
-    foreach ($appState['db'] as $lvl => $data) {
+    // Sort levels first to calculate cumulative CGPA correctly
+    $sortedLevels = $appState['db'];
+    ksort($sortedLevels);
+
+    foreach ($sortedLevels as $lvl => $data) {
         $gpa = getGPA($appState['db'], $lvl);
         if ($gpa !== null) {
-            $levels[$lvl] = $gpa;
-            // Recalculate global for profile
-            foreach ($data as $sem) {
-                if ($sem['mode'] === 'quick') {
-                    if ($sem['units'] > 0) {
-                        $globalU += $sem['units'];
-                        $globalQP += ($sem['units'] * $sem['gpa']);
-                    }
-                } elseif ($sem['mode'] === 'detail') {
-                    foreach ($sem['items'] as $item) {
-                        if ($item['u'] > 0) {
-                            $gp = -1;
-                            if ($sem['type'] === 'score') {
-                                $s = $item['s'];
-                                if ($s >= 70)
-                                    $gp = 5;
-                                else if ($s >= 60)
-                                    $gp = 4;
-                                else if ($s >= 50)
-                                    $gp = 3;
-                                else if ($s >= 45)
-                                    $gp = 2;
-                                else if ($s >= 40)
-                                    $gp = 1;
-                                else
-                                    $gp = 0;
-                            } else {
-                                $gp = $item['g'] !== '' ? floatval($item['g']) : -1;
-                            }
-                            if ($gp !== -1) {
-                                $globalU += $item['u'];
-                                $globalQP += ($item['u'] * $gp);
+            // Calculate cumulative CGPA up to this level
+            $cumulativeQP = 0;
+            $cumulativeU = 0;
+
+            // Iterate through all levels up to and including current level
+            foreach ($sortedLevels as $currentLvl => $currentData) {
+                if ($currentLvl > $lvl)
+                    break; // Stop when we pass the current level
+
+                foreach ($currentData as $sem) {
+                    if ($sem['mode'] === 'quick') {
+                        if ($sem['units'] > 0) {
+                            $cumulativeU += $sem['units'];
+                            $cumulativeQP += ($sem['units'] * $sem['gpa']);
+                        }
+                    } elseif ($sem['mode'] === 'detail') {
+                        foreach ($sem['items'] as $item) {
+                            if ($item['u'] > 0) {
+                                $gp = -1;
+                                if ($sem['type'] === 'score') {
+                                    $s = $item['s'];
+                                    if ($s >= 70)
+                                        $gp = 5;
+                                    else if ($s >= 60)
+                                        $gp = 4;
+                                    else if ($s >= 50)
+                                        $gp = 3;
+                                    else if ($s >= 45)
+                                        $gp = 2;
+                                    else if ($s >= 40)
+                                        $gp = 1;
+                                    else
+                                        $gp = 0;
+                                } else {
+                                    $gp = $item['g'] !== '' ? floatval($item['g']) : -1;
+                                }
+                                if ($gp !== -1) {
+                                    $cumulativeU += $item['u'];
+                                    $cumulativeQP += ($item['u'] * $gp);
+                                }
                             }
                         }
                     }
                 }
             }
+
+            $cumulativeCGPA = $cumulativeU > 0 ? ($cumulativeQP / $cumulativeU) : 0;
+
+            $levels[$lvl] = [
+                'gpa' => $gpa,
+                'cgpa' => $cumulativeCGPA
+            ];
+
+            // Update global totals
+            $globalQP = $cumulativeQP;
+            $globalU = $cumulativeU;
         }
     }
 }
@@ -237,16 +260,16 @@ if ($globalU > 0) {
                     </div>
                 <?php else: ?>
                     <?php ksort($levels);
-                    foreach ($levels as $lvl => $gpa): ?>
+                    foreach ($levels as $lvl => $data): ?>
                         <div class="glass rounded-3xl p-5 flex justify-between items-center">
                             <div>
                                 <h4 class="text-lg font-extrabold text-slate-800">
                                     <?php echo $lvl; ?> Level
                                 </h4>
-                                <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Yearly GPA</p>
+                                <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">CGPA at Level</p>
                             </div>
-                            <div class="text-2xl font-black text-emerald-600">
-                                <?php echo number_format($gpa, 2); ?>
+                            <div class="text-2xl font-black text-indigo-600">
+                                <?php echo number_format($data['cgpa'], 2); ?>
                             </div>
                         </div>
                     <?php endforeach; ?>
